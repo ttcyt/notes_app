@@ -1,8 +1,8 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:note_app/model/sample_notes.dart';
 import 'package:note_app/constant/colors.dart';
+import 'package:note_app/view/input_page.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -120,7 +120,9 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>InputPage()));
+          },
           elevation: 10,
           shape: CircleBorder(
             side: BorderSide.none,
