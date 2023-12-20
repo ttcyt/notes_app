@@ -1,8 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:note_app/model/sample_notes.dart';
+import 'package:note_app/sample_note_data.dart';
 import 'package:note_app/constant/colors.dart';
 import 'package:note_app/view/input_page.dart';
+import 'package:note_app/model/sample_notes.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -11,28 +13,56 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<Note> searchNotes = [];
+
   @override
-  Color getRandomColor(){
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    searchNotes = sampleNotes;
+  }
+
+  void onChangedSearchText(String searchText) {
+    setState(() {
+      searchNotes = sampleNotes
+          .where((note) =>
+              note.content.toLowerCase().contains(searchText.toLowerCase()) ||
+              note.title.toLowerCase().contains(searchText.toLowerCase()))
+          .toList();
+    });
+  }
+
+  void deleteNote(int index) {
+    setState(() {
+      Note note = searchNotes[index];
+      sampleNotes.remove(note);
+      searchNotes.removeAt(index);
+    });
+  }
+
+  Color getRandomColor() {
     int random = Random().nextInt(6);
     return colors[random];
   }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.grey.shade900,
         body: Padding(
-          padding: EdgeInsets.only(top: 40, left: 20, right: 20),
+          padding: const EdgeInsets.only(top: 40, left: 20, right: 20),
           child: Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     'Notes',
                     style: TextStyle(fontSize: 40, color: Colors.white),
                   ),
                   IconButton(
                     onPressed: () {},
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.sort_outlined,
                       color: Colors.white,
                       size: 40,
@@ -40,15 +70,20 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 width: 20,
                 height: 10,
               ),
               TextField(
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+                onChanged: onChangedSearchText,
                 decoration: InputDecoration(
+
                   hintText: 'Search',
-                  hintStyle: TextStyle(fontSize: 20, color: Colors.grey),
-                  prefixIcon: Icon(
+                  hintStyle: const TextStyle(fontSize: 20, color: Colors.grey),
+                  prefixIcon: const Icon(
                     Icons.search,
                     color: Colors.grey,
                   ),
@@ -64,40 +99,37 @@ class _HomePageState extends State<HomePage> {
               ),
               Expanded(
                 child: ListView.builder(
-                  itemCount: sampleNotes.length,
+                  itemCount: searchNotes.length,
                   itemBuilder: (context, index) {
                     return Card(
                       elevation: 10,
                       color: getRandomColor(),
                       child: ListTile(
                         title: Padding(
-                          padding: EdgeInsets.all(5),
+                          padding: const EdgeInsets.all(5),
                           child: RichText(
-                            maxLines: 3,
                             text: TextSpan(
-                              text: '${sampleNotes[index].title}\n',
-                              style: TextStyle(
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black
-                              ),
+                              text: '${searchNotes[index].title}\n',
+                              style: const TextStyle(
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
                               children: [
                                 TextSpan(
-                                  text: '${sampleNotes[index].content}',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.black
-                                  ),
+                                  text: searchNotes[index].content,
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.normal,
+                                      color: Colors.black),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        subtitle: Padding(
+                        subtitle: const Padding(
                           padding: EdgeInsets.all(3),
                           child: Text(
-                            'date:${sampleNotes[index].modifiedTime}',
+                            'date:2023/12/20',
                             style: TextStyle(
                               fontSize: 15,
                               fontStyle: FontStyle.italic,
@@ -106,8 +138,10 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         trailing: IconButton(
-                          onPressed: () {},
-                          icon: Icon(
+                          onPressed: () {
+                            deleteNote(index);
+                          },
+                          icon: const Icon(
                             Icons.delete,
                           ),
                         ),
@@ -120,16 +154,28 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>InputPage()));
+          onPressed: () async {
+            final result = await Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const InputPage()));
+            //第一次給職之後就不能再改變
+            if (result != null) {
+              setState(() {
+                sampleNotes.add(Note(
+                  id: sampleNotes.length,
+                  title: result[0],
+                  content: result[1],
+                ));
+                searchNotes = sampleNotes;
+              });
+            }
           },
           elevation: 10,
-          shape: CircleBorder(
+          shape: const CircleBorder(
             side: BorderSide.none,
             eccentricity: 0,
           ),
           backgroundColor: Colors.grey.shade600,
-          child: Icon(Icons.add),
+          child: const Icon(Icons.add),
         ));
   }
 }
